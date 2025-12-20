@@ -1,0 +1,16 @@
+[package]
+name = "curve"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+p3-field = { git = "https://github.com/Plonky3/Plonky3.git" }
+p3-koala-bear = { git = "https://github.com/Plonky3/Plonky3.git" }
+p3-symmetric = { git = "https://github.com/Plonky3/Plonky3.git" }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "field_multiplication"
+harness = false
