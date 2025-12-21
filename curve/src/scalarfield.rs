@@ -13,6 +13,8 @@ use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAss
 use num_bigint::BigUint;
 use p3_field::integers::QuotientMap;
 use p3_field::{Field, Packable, PrimeCharacteristicRing, PrimeField, RawDataSerializable};
+use rand::distr::{Distribution, StandardUniform};
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 
 /// Scalar field element for the curve
@@ -87,6 +89,11 @@ impl ScalarField {
         };
         montgomery_mul(*self, one).limbs
     }
+
+    #[inline]
+    fn from_canonical_limbs(limbs: [u64; 4]) -> Self {
+        montgomery_mul(ScalarField { limbs }, ScalarField { limbs: R2 })
+    }
 }
 
 /// Helper: Add two 256-bit numbers mod p
@@ -138,6 +145,15 @@ const fn neg_mod(a: [u64; 4]) -> [u64; 4] {
         return [0, 0, 0, 0];
     }
     sub_mod(MODULUS, a)
+}
+
+#[inline]
+const fn is_canonical(limbs: [u64; 4]) -> bool {
+    let (_, borrow) = limbs[0].overflowing_sub(MODULUS[0]);
+    let (_, borrow) = borrowing_sub(limbs[1], MODULUS[1], borrow);
+    let (_, borrow) = borrowing_sub(limbs[2], MODULUS[2], borrow);
+    let (_, borrow) = borrowing_sub(limbs[3], MODULUS[3], borrow);
+    borrow
 }
 
 /// Helper: Carrying addition
@@ -266,6 +282,26 @@ impl RawDataSerializable for ScalarField {
             bytes.extend_from_slice(&limb.to_le_bytes());
         }
         bytes
+    }
+}
+
+impl Distribution<ScalarField> for StandardUniform {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> ScalarField {
+        loop {
+            let mut bytes: [u8; 32] = rng.random();
+            bytes[31] = 0;
+
+            let limbs = [
+                u64::from_le_bytes(bytes[0..8].try_into().unwrap()),
+                u64::from_le_bytes(bytes[8..16].try_into().unwrap()),
+                u64::from_le_bytes(bytes[16..24].try_into().unwrap()),
+                u64::from_le_bytes(bytes[24..32].try_into().unwrap()),
+            ];
+
+            if is_canonical(limbs) {
+                return ScalarField::from_canonical_limbs(limbs);
+            }
+        }
     }
 }
 

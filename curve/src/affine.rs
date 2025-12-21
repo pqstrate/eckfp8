@@ -206,6 +206,98 @@ impl Affine {
 
         result
     }
+
+    /// Optimized scalar multiplication using windowed method (width = 4)
+    pub fn scalar_mul_windowed(&self, scalar: &ScalarField) -> Self {
+        if self.is_infinity() {
+            return Self::INFINITY;
+        }
+
+        // Precompute small multiples: [0P, 1P, 2P, ..., 15P]
+        let mut table = [Self::INFINITY; 16];
+        table[1] = *self;
+
+        for i in 2..16 {
+            table[i] = if i % 2 == 0 {
+                table[i / 2].double()
+            } else {
+                table[i - 1] + table[1]
+            };
+        }
+
+        let scalar_bytes = scalar.to_canonical_u64_vec();
+        let mut result = Self::INFINITY;
+
+        // Process 4 bits at a time, from most significant to least
+        for &limb in scalar_bytes.iter().rev() {
+            for shift in (0..64).step_by(4).rev() {
+                // Double 4 times
+                result = result.double();
+                result = result.double();
+                result = result.double();
+                result = result.double();
+
+                // Add the windowed value
+                let window = ((limb >> shift) & 0xF) as usize;
+                if window != 0 {
+                    result = result + table[window];
+                }
+            }
+        }
+
+        result
+    }
+
+    /// Multi-scalar multiplication: compute sum of scalar_i * point_i
+    pub fn multi_scalar_mul(points: &[Self], scalars: &[ScalarField]) -> Self {
+        assert_eq!(
+            points.len(),
+            scalars.len(),
+            "Points and scalars must have same length"
+        );
+
+        let mut result = Self::INFINITY;
+        for (point, scalar) in points.iter().zip(scalars.iter()) {
+            result = result + point.scalar_mul(scalar);
+        }
+        result
+    }
+
+    /// Check if this is the identity element (point at infinity)
+    #[inline]
+    pub fn is_identity(&self) -> bool {
+        self.is_infinity
+    }
+
+    /// Return the identity element
+    #[inline]
+    pub fn identity() -> Self {
+        Self::INFINITY
+    }
+
+    /// Compute n * self for a u64 scalar
+    pub fn mul_u64(&self, n: u64) -> Self {
+        if n == 0 {
+            return Self::INFINITY;
+        }
+        if n == 1 {
+            return *self;
+        }
+
+        let mut result = Self::INFINITY;
+        let mut temp = *self;
+        let mut bits = n;
+
+        while bits > 0 {
+            if bits & 1 == 1 {
+                result = result + temp;
+            }
+            temp = temp.double();
+            bits >>= 1;
+        }
+
+        result
+    }
 }
 
 // Implement addition for affine points
@@ -407,5 +499,77 @@ mod tests {
         let right = g.scalar_mul(&a) + g.scalar_mul(&b);
 
         assert_eq!(left, right);
+    }
+
+    #[test]
+    fn test_windowed_scalar_mul() {
+        let g = Affine::generator();
+        let scalar = ScalarField::from_canonical_u64(123456);
+
+        // Compare windowed and standard scalar multiplication
+        let result1 = g.scalar_mul(&scalar);
+        let result2 = g.scalar_mul_windowed(&scalar);
+
+        assert_eq!(result1, result2);
+        assert!(result1.is_on_curve());
+    }
+
+    #[test]
+    fn test_multi_scalar_mul() {
+        let g = Affine::generator();
+        let h = Affine::generator_pedersen();
+
+        let a = ScalarField::from_canonical_u64(7);
+        let b = ScalarField::from_canonical_u64(11);
+
+        let points = vec![g, h];
+        let scalars = vec![a, b];
+
+        let result = Affine::multi_scalar_mul(&points, &scalars);
+        let expected = g.scalar_mul(&a) + h.scalar_mul(&b);
+
+        assert_eq!(result, expected);
+        assert!(result.is_on_curve());
+    }
+
+    #[test]
+    fn test_mul_u64() {
+        let g = Affine::generator();
+        let n = 42u64;
+
+        let result1 = g.mul_u64(n);
+        let result2 = g.scalar_mul(&ScalarField::from_canonical_u64(n));
+
+        assert_eq!(result1, result2);
+        assert!(result1.is_on_curve());
+    }
+
+    #[test]
+    fn test_identity() {
+        let id = Affine::identity();
+        assert!(id.is_identity());
+        assert_eq!(id, Affine::INFINITY);
+
+        let g = Affine::generator();
+        assert_eq!(g + id, g);
+        assert_eq!(id + g, g);
+    }
+
+    #[test]
+    fn test_group_properties() {
+        let g = Affine::generator();
+
+        // Test that doubling is the same as adding to itself
+        assert_eq!(g.double(), g + g);
+
+        // Test that triple is correct
+        let triple1 = g + g + g;
+        let triple2 = g.mul_u64(3);
+        assert_eq!(triple1, triple2);
+
+        // Test inverse property
+        let h = g.mul_u64(5);
+        let neg_h = -h;
+        assert_eq!(h + neg_h, Affine::INFINITY);
     }
 }
