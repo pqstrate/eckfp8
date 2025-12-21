@@ -20,6 +20,11 @@ pub trait Group:
     fn is_identity(&self) -> bool;
     /// A fixed generator for the curve group.
     fn generator() -> Self;
+    /// Multiply the fixed generator by a scalar.
+    #[inline]
+    fn mul_generator(scalar: &Self::Scalar) -> Self {
+        Self::generator().scalar_mul(scalar)
+    }
     /// Return 2 * self.
     fn double(&self) -> Self;
     /// Return -self.

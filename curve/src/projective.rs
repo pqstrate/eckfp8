@@ -1,6 +1,6 @@
 use crate::affine::Affine;
 use crate::basefield::{from_coeffs, BaseField};
-use crate::{Group, ScalarField};
+use crate::{mul_generator_projective, Group, ScalarField};
 use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 use p3_field::{Field, PrimeCharacteristicRing};
 use p3_koala_bear::KoalaBear;
@@ -128,6 +128,11 @@ impl Projective {
         Projective::new(self.x, -self.y, self.z)
     }
 
+    /// Multiply the fixed generator using a precomputed table.
+    pub fn mul_generator(scalar: &ScalarField) -> Self {
+        mul_generator_projective(scalar)
+    }
+
     /// Batch normalization: convert multiple projective points to affine.
     /// This is more efficient than converting them individually.
     pub fn batch_normalize(points: &[Self]) -> Vec<Affine> {
@@ -151,6 +156,11 @@ impl Group for Projective {
     #[inline]
     fn generator() -> Self {
         Projective::generator()
+    }
+
+    #[inline]
+    fn mul_generator(scalar: &ScalarField) -> Self {
+        Projective::mul_generator(scalar)
     }
 
     #[inline]
@@ -416,6 +426,25 @@ mod tests {
 
         assert_eq!(result1, result2);
         assert!(result1.is_on_curve());
+    }
+
+    #[test]
+    fn test_mul_generator() {
+        let scalar = ScalarField::from_canonical_u64(123456);
+        let result = Projective::mul_generator(&scalar);
+        let expected = Projective::generator().scalar_mul(&scalar);
+
+        assert_eq!(result, expected);
+        assert!(result.is_on_curve());
+    }
+
+    #[test]
+    fn test_group_mul_generator_matches_scalar_mul() {
+        let scalar = ScalarField::from_canonical_u64(424242);
+        let result = <Projective as Group>::mul_generator(&scalar);
+        let expected = Projective::generator().scalar_mul(&scalar);
+
+        assert_eq!(result, expected);
     }
 
     #[test]

@@ -13,7 +13,6 @@ num-bigint = "0.4"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
-rand = "0.9"
 
 [[bench]]
 name = "field_multiplication"

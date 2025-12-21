@@ -77,6 +77,24 @@ fn bench_projective_scalar_mul_windowed(c: &mut Criterion) {
     });
 }
 
+fn bench_affine_mul_generator(c: &mut Criterion) {
+    let mut rng = StdRng::seed_from_u64(42);
+    let scalar = random_scalar(&mut rng);
+
+    c.bench_function("affine_mul_generator", |bencher| {
+        bencher.iter(|| black_box(Affine::mul_generator(black_box(&scalar))))
+    });
+}
+
+fn bench_projective_mul_generator(c: &mut Criterion) {
+    let mut rng = StdRng::seed_from_u64(42);
+    let scalar = random_scalar(&mut rng);
+
+    c.bench_function("projective_mul_generator", |bencher| {
+        bencher.iter(|| black_box(Projective::mul_generator(black_box(&scalar))))
+    });
+}
+
 fn bench_affine_msm(c: &mut Criterion) {
     let mut group = c.benchmark_group("affine_msm");
 
@@ -155,6 +173,8 @@ criterion_group!(
     bench_projective_scalar_mul,
     bench_affine_scalar_mul_windowed,
     bench_projective_scalar_mul_windowed,
+    bench_affine_mul_generator,
+    bench_projective_mul_generator,
     bench_affine_msm,
     bench_projective_msm
 );

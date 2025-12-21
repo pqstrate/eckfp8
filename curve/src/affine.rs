@@ -10,7 +10,7 @@
 // Twist security (Pollard-Rho): 120.86
 
 use crate::basefield::{from_coeffs, BaseField};
-use crate::{Group, ScalarField};
+use crate::{mul_generator_affine, Group, ScalarField};
 use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 use p3_field::{Field, PrimeCharacteristicRing};
 use p3_koala_bear::KoalaBear;
@@ -185,6 +185,11 @@ impl Affine {
         }
         Affine::new(self.x, -self.y)
     }
+
+    /// Multiply the fixed generator using a precomputed table.
+    pub fn mul_generator(scalar: &ScalarField) -> Self {
+        mul_generator_affine(scalar)
+    }
 }
 
 impl Group for Affine {
@@ -203,6 +208,11 @@ impl Group for Affine {
     #[inline]
     fn generator() -> Self {
         Affine::generator()
+    }
+
+    #[inline]
+    fn mul_generator(scalar: &ScalarField) -> Self {
+        Affine::mul_generator(scalar)
     }
 
     #[inline]
@@ -429,6 +439,25 @@ mod tests {
 
         assert_eq!(result1, result2);
         assert!(result1.is_on_curve());
+    }
+
+    #[test]
+    fn test_mul_generator() {
+        let scalar = ScalarField::from_canonical_u64(123456);
+        let result = Affine::mul_generator(&scalar);
+        let expected = Affine::generator().scalar_mul(&scalar);
+
+        assert_eq!(result, expected);
+        assert!(result.is_on_curve());
+    }
+
+    #[test]
+    fn test_group_mul_generator_matches_scalar_mul() {
+        let scalar = ScalarField::from_canonical_u64(424242);
+        let result = <Affine as Group>::mul_generator(&scalar);
+        let expected = Affine::generator().scalar_mul(&scalar);
+
+        assert_eq!(result, expected);
     }
 
     #[test]
