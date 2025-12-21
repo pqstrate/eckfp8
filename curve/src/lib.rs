@@ -1,8 +1,10 @@
+mod affine;
 mod basefield;
-mod curve;
+mod projective;
 mod scalarfield;
 
-// Re-export the base field and scalar field for convenience
+pub use affine::Affine;
 pub use basefield::BaseField;
 pub use p3_koala_bear::KoalaBear;
+pub use projective::Projective;
 pub use scalarfield::ScalarField;
