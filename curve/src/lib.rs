@@ -1,5 +1,8 @@
-pub mod basefield;
+mod basefield;
+mod curve;
+mod scalarfield;
 
-// Re-export the KoalaBear base field and extension fields for convenience
+// Re-export the base field and scalar field for convenience
 pub use basefield::BaseField;
 pub use p3_koala_bear::KoalaBear;
+pub use scalarfield::ScalarField;

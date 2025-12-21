@@ -171,9 +171,11 @@ name = "curve"
 version = "0.1.0"
 dependencies = [
  "criterion",
+ "num-bigint",
  "p3-field",
  "p3-koala-bear",
  "p3-symmetric",
+ "serde",
 ]
 
 [[package]]
