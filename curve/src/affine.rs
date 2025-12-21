@@ -10,7 +10,7 @@
 // Twist security (Pollard-Rho): 120.86
 
 use crate::basefield::{from_coeffs, BaseField};
-use crate::scalarfield::ScalarField;
+use crate::{Group, ScalarField};
 use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 use p3_field::{Field, PrimeCharacteristicRing};
 use p3_koala_bear::KoalaBear;
@@ -185,118 +185,34 @@ impl Affine {
         }
         Affine::new(self.x, -self.y)
     }
+}
 
-    /// Scalar multiplication using double-and-add algorithm
-    pub fn scalar_mul(&self, scalar: &ScalarField) -> Self {
-        let scalar_bytes = scalar.to_canonical_u64_vec();
-        let mut result = Self::INFINITY;
-        let mut temp = *self;
+impl Group for Affine {
+    type Scalar = ScalarField;
 
-        // Process each limb
-        for &limb in scalar_bytes.iter() {
-            let mut bits = limb;
-            for _ in 0..64 {
-                if bits & 1 == 1 {
-                    result = result + temp;
-                }
-                temp = temp.double();
-                bits >>= 1;
-            }
-        }
-
-        result
-    }
-
-    /// Optimized scalar multiplication using windowed method (width = 4)
-    pub fn scalar_mul_windowed(&self, scalar: &ScalarField) -> Self {
-        if self.is_infinity() {
-            return Self::INFINITY;
-        }
-
-        // Precompute small multiples: [0P, 1P, 2P, ..., 15P]
-        let mut table = [Self::INFINITY; 16];
-        table[1] = *self;
-
-        for i in 2..16 {
-            table[i] = if i % 2 == 0 {
-                table[i / 2].double()
-            } else {
-                table[i - 1] + table[1]
-            };
-        }
-
-        let scalar_bytes = scalar.to_canonical_u64_vec();
-        let mut result = Self::INFINITY;
-
-        // Process 4 bits at a time, from most significant to least
-        for &limb in scalar_bytes.iter().rev() {
-            for shift in (0..64).step_by(4).rev() {
-                // Double 4 times
-                result = result.double();
-                result = result.double();
-                result = result.double();
-                result = result.double();
-
-                // Add the windowed value
-                let window = ((limb >> shift) & 0xF) as usize;
-                if window != 0 {
-                    result = result + table[window];
-                }
-            }
-        }
-
-        result
-    }
-
-    /// Multi-scalar multiplication: compute sum of scalar_i * point_i
-    pub fn multi_scalar_mul(points: &[Self], scalars: &[ScalarField]) -> Self {
-        assert_eq!(
-            points.len(),
-            scalars.len(),
-            "Points and scalars must have same length"
-        );
-
-        let mut result = Self::INFINITY;
-        for (point, scalar) in points.iter().zip(scalars.iter()) {
-            result = result + point.scalar_mul(scalar);
-        }
-        result
-    }
-
-    /// Check if this is the identity element (point at infinity)
     #[inline]
-    pub fn is_identity(&self) -> bool {
-        self.is_infinity
-    }
-
-    /// Return the identity element
-    #[inline]
-    pub fn identity() -> Self {
+    fn identity() -> Self {
         Self::INFINITY
     }
 
-    /// Compute n * self for a u64 scalar
-    pub fn mul_u64(&self, n: u64) -> Self {
-        if n == 0 {
-            return Self::INFINITY;
-        }
-        if n == 1 {
-            return *self;
-        }
+    #[inline]
+    fn is_identity(&self) -> bool {
+        self.is_infinity
+    }
 
-        let mut result = Self::INFINITY;
-        let mut temp = *self;
-        let mut bits = n;
+    #[inline]
+    fn generator() -> Self {
+        Affine::generator()
+    }
 
-        while bits > 0 {
-            if bits & 1 == 1 {
-                result = result + temp;
-            }
-            temp = temp.double();
-            bits >>= 1;
-        }
+    #[inline]
+    fn double(&self) -> Self {
+        Self::double(self)
+    }
 
-        result
+    #[inline]
+    fn negate(&self) -> Self {
+        Self::negate(self)
     }
 }
 
@@ -374,7 +290,7 @@ impl Mul<ScalarField> for Affine {
     type Output = Self;
 
     fn mul(self, scalar: ScalarField) -> Self {
-        self.scalar_mul(&scalar)
+        <Self as Group>::scalar_mul(&self, &scalar)
     }
 }
 
@@ -382,7 +298,7 @@ impl Mul<&ScalarField> for Affine {
     type Output = Self;
 
     fn mul(self, scalar: &ScalarField) -> Self {
-        self.scalar_mul(scalar)
+        <Self as Group>::scalar_mul(&self, scalar)
     }
 }
 
@@ -390,7 +306,7 @@ impl Mul<Affine> for ScalarField {
     type Output = Affine;
 
     fn mul(self, point: Affine) -> Affine {
-        point.scalar_mul(&self)
+        <Affine as Group>::scalar_mul(&point, &self)
     }
 }
 
@@ -398,13 +314,14 @@ impl Mul<&Affine> for ScalarField {
     type Output = Affine;
 
     fn mul(self, point: &Affine) -> Affine {
-        point.scalar_mul(&self)
+        <Affine as Group>::scalar_mul(point, &self)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Group;
 
     #[test]
     fn test_infinity() {
@@ -525,7 +442,7 @@ mod tests {
         let points = vec![g, h];
         let scalars = vec![a, b];
 
-        let result = Affine::multi_scalar_mul(&points, &scalars);
+        let result = <Affine as Group>::multi_scalar_mul(&points, &scalars);
         let expected = g.scalar_mul(&a) + h.scalar_mul(&b);
 
         assert_eq!(result, expected);
@@ -546,7 +463,7 @@ mod tests {
 
     #[test]
     fn test_identity() {
-        let id = Affine::identity();
+        let id = <Affine as Group>::identity();
         assert!(id.is_identity());
         assert_eq!(id, Affine::INFINITY);
 

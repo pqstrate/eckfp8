@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use curve::{Affine, Projective, RandomField, ScalarField};
+use curve::{Affine, Group, Projective, RandomField, ScalarField};
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 
@@ -101,7 +101,7 @@ fn bench_affine_msm(c: &mut Criterion) {
 
         group.bench_with_input(BenchmarkId::from_parameter(size), size, |bencher, _| {
             bencher.iter(|| {
-                black_box(Affine::multi_scalar_mul(
+                black_box(<Affine as Group>::multi_scalar_mul(
                     black_box(&points),
                     black_box(&scalars),
                 ))
@@ -135,7 +135,7 @@ fn bench_projective_msm(c: &mut Criterion) {
 
         group.bench_with_input(BenchmarkId::from_parameter(size), size, |bencher, _| {
             bencher.iter(|| {
-                black_box(Projective::multi_scalar_mul(
+                black_box(<Projective as Group>::multi_scalar_mul(
                     black_box(&points),
                     black_box(&scalars),
                 ))

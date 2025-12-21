@@ -1,11 +1,13 @@
 mod affine;
 mod basefield;
+mod group;
 mod projective;
 mod random;
 mod scalarfield;
 
 pub use affine::Affine;
 pub use basefield::BaseField;
+pub use group::{Group, ScalarBits};
 pub use p3_koala_bear::KoalaBear;
 pub use projective::Projective;
 pub use random::RandomField;

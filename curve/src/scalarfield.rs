@@ -5,6 +5,7 @@
 
 extern crate alloc;
 
+use crate::ScalarBits;
 use alloc::vec::Vec;
 use core::fmt::{self, Debug, Display, Formatter};
 use core::hash::{Hash, Hasher};
@@ -93,6 +94,13 @@ impl ScalarField {
     #[inline]
     fn from_canonical_limbs(limbs: [u64; 4]) -> Self {
         montgomery_mul(ScalarField { limbs }, ScalarField { limbs: R2 })
+    }
+}
+
+impl ScalarBits for ScalarField {
+    #[inline]
+    fn to_u64_limbs(&self) -> [u64; 4] {
+        self.to_canonical_u64_vec()
     }
 }
 
