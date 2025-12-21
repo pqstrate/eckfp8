@@ -1,3 +1,9 @@
+//! Elliptic curve group over the KoalaBear degree-8 extension field.
+//!
+//! This crate provides affine and projective curve points, a scalar field
+//! implementation, and helpers for random sampling. The curve parameters and
+//! generators are fixed to the values in the `affine` module.
+
 mod affine;
 mod basefield;
 mod group;

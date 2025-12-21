@@ -3,6 +3,7 @@ use rand::Rng;
 
 use crate::{BaseField, ScalarField};
 
+/// Helper trait for sampling random field elements.
 pub trait RandomField: Sized {
     fn random<R: Rng + ?Sized>(rng: &mut R) -> Self;
 }

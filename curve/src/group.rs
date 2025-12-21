@@ -1,20 +1,31 @@
 use core::ops::{Add, AddAssign, Neg, Sub, SubAssign};
 
+/// A scalar type that can expose its canonical 256-bit representation.
 pub trait ScalarBits {
     fn to_u64_limbs(&self) -> [u64; 4];
 }
 
+/// Basic additive group behavior for curve points.
+///
+/// This trait centralizes scalar multiplication and related utilities so
+/// point types can share one correct implementation.
 pub trait Group:
     Sized + Copy + Add<Output = Self> + AddAssign + Sub<Output = Self> + SubAssign + Neg<Output = Self>
 {
     type Scalar: ScalarBits;
 
+    /// Return the identity element.
     fn identity() -> Self;
+    /// Return true if this element is the identity.
     fn is_identity(&self) -> bool;
+    /// A fixed generator for the curve group.
     fn generator() -> Self;
+    /// Return 2 * self.
     fn double(&self) -> Self;
+    /// Return -self.
     fn negate(&self) -> Self;
 
+    /// Double-and-add scalar multiplication.
     #[inline]
     fn scalar_mul(&self, scalar: &Self::Scalar) -> Self {
         let scalar_limbs = scalar.to_u64_limbs();
@@ -35,6 +46,7 @@ pub trait Group:
         result
     }
 
+    /// Fixed-window (width = 4) scalar multiplication.
     fn scalar_mul_windowed(&self, scalar: &Self::Scalar) -> Self {
         if self.is_identity() {
             return Self::identity();
@@ -71,6 +83,7 @@ pub trait Group:
         result
     }
 
+    /// Multiply by a small `u64` scalar.
     fn mul_u64(&self, n: u64) -> Self {
         if n == 0 {
             return Self::identity();
@@ -94,6 +107,7 @@ pub trait Group:
         result
     }
 
+    /// Naive multi-scalar multiplication.
     fn multi_scalar_mul(points: &[Self], scalars: &[Self::Scalar]) -> Self {
         assert_eq!(
             points.len(),

@@ -6,9 +6,9 @@ use p3_field::{Field, PrimeCharacteristicRing};
 use p3_koala_bear::KoalaBear;
 use serde::{Deserialize, Serialize};
 
-/// Projective point on the elliptic curve
-/// Represents a point in projective coordinates (X:Y:Z) where (x,y) = (X/Z, Y/Z)
-/// The point at infinity is represented as (0:1:0)
+/// Projective point on the elliptic curve.
+/// Represents a point in projective coordinates (X:Y:Z) where (x,y) = (X/Z, Y/Z).
+/// The point at infinity is represented as (0:1:0).
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Projective {
     pub x: BaseField,
@@ -47,18 +47,18 @@ impl Projective {
         z: BaseField::ZERO,
     };
 
-    /// Create a new projective point
+    /// Create a new projective point.
     pub fn new(x: BaseField, y: BaseField, z: BaseField) -> Self {
         Projective { x, y, z }
     }
 
-    /// Check if this point is the point at infinity
+    /// Check if this point is the point at infinity.
     #[inline]
     pub fn is_infinity(&self) -> bool {
         self.z.is_zero()
     }
 
-    /// Convert to affine coordinates
+    /// Convert to affine coordinates.
     pub fn to_affine(&self) -> Affine {
         if self.is_infinity() {
             return Affine::INFINITY;
@@ -71,7 +71,7 @@ impl Projective {
         Affine::new(x, y)
     }
 
-    /// Convert from affine coordinates
+    /// Convert from affine coordinates.
     pub fn from_affine(point: &Affine) -> Self {
         if point.is_infinity() {
             return Self::INFINITY;
@@ -80,7 +80,7 @@ impl Projective {
         Projective::new(point.x, point.y, BaseField::ONE)
     }
 
-    /// Check if a point is on the curve: Y^2*Z = X^3 + a*X*Z^2 + b*Z^3
+    /// Check if a point is on the curve: Y^2*Z = X^3 + a*X*Z^2 + b*Z^3.
     pub fn is_on_curve(&self) -> bool {
         if self.is_infinity() {
             return true;
@@ -98,18 +98,18 @@ impl Projective {
         lhs == rhs
     }
 
-    /// Generator point from SSWU on 'ZKM2'
+    /// Generator point from SSWU on 'ZKM2'.
     pub fn generator() -> Self {
         Self::from_affine(&Affine::generator())
     }
 
-    /// Alternative generator point from SSWU on 'ZKM2 - Pedersen'
+    /// Alternative generator point from SSWU on 'ZKM2 - Pedersen'.
     pub fn generator_pedersen() -> Self {
         Self::from_affine(&Affine::generator_pedersen())
     }
 
-    /// Point doubling: 2*P using projective coordinates
-    /// For simplicity and correctness, convert to affine, double, and convert back
+    /// Point doubling: 2*P using projective coordinates.
+    /// For simplicity and correctness, convert to affine, double, and convert back.
     pub fn double(&self) -> Self {
         if self.is_infinity() {
             return *self;
@@ -120,7 +120,7 @@ impl Projective {
         Self::from_affine(&doubled_affine)
     }
 
-    /// Negate a point
+    /// Negate a point.
     pub fn negate(&self) -> Self {
         if self.is_infinity() {
             return *self;
@@ -128,8 +128,8 @@ impl Projective {
         Projective::new(self.x, -self.y, self.z)
     }
 
-    /// Batch normalization: convert multiple projective points to affine
-    /// This is more efficient than converting them individually
+    /// Batch normalization: convert multiple projective points to affine.
+    /// This is more efficient than converting them individually.
     pub fn batch_normalize(points: &[Self]) -> Vec<Affine> {
         points.iter().map(|p| p.to_affine()).collect()
     }

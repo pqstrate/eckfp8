@@ -16,8 +16,8 @@ use p3_field::{Field, PrimeCharacteristicRing};
 use p3_koala_bear::KoalaBear;
 use serde::{Deserialize, Serialize};
 
-/// Affine point on the elliptic curve
-/// Represents a point in affine coordinates (x, y) or the point at infinity
+/// Affine point on the elliptic curve.
+/// Represents a point in affine coordinates (x, y) or the point at infinity.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Affine {
     pub x: BaseField,
@@ -56,7 +56,7 @@ impl Affine {
         is_infinity: true,
     };
 
-    /// Create a new affine point
+    /// Create a new affine point.
     pub fn new(x: BaseField, y: BaseField) -> Self {
         Affine {
             x,
@@ -65,13 +65,13 @@ impl Affine {
         }
     }
 
-    /// Check if this point is the point at infinity
+    /// Check if this point is the point at infinity.
     #[inline]
     pub fn is_infinity(&self) -> bool {
         self.is_infinity
     }
 
-    /// Check if a point is on the curve: y^2 = x^3 + a*x + b
+    /// Check if a point is on the curve: y^2 = x^3 + a*x + b.
     pub fn is_on_curve(&self) -> bool {
         if self.is_infinity {
             return true;
@@ -86,7 +86,7 @@ impl Affine {
         y2 == rhs
     }
 
-    /// Generator point from SSWU on 'ZKM2'
+    /// Generator point from SSWU on 'ZKM2'.
     pub fn generator() -> Self {
         // (1195559694*u^7 + 1368232771*u^6 + 438909494*u^5 + 1825476283*u^4 +
         //  1299273209*u^3 + 2115217807*u^2 + 1763905369*u + 1813646457 :
@@ -118,7 +118,7 @@ impl Affine {
         Affine::new(x, y)
     }
 
-    /// Alternative generator point from SSWU on 'ZKM2 - Pedersen'
+    /// Alternative generator point from SSWU on 'ZKM2 - Pedersen'.
     pub fn generator_pedersen() -> Self {
         // (1741425845*u^7 + 1750752810*u^6 + 7156361*u^5 + 1949220725*u^4 +
         //  543192455*u^3 + 358531926*u^2 + 550988532*u + 1709677626 :
@@ -150,7 +150,7 @@ impl Affine {
         Affine::new(x, y)
     }
 
-    /// Point doubling: 2*P
+    /// Point doubling: 2*P.
     pub fn double(&self) -> Self {
         if self.is_infinity {
             return *self;
@@ -178,7 +178,7 @@ impl Affine {
         Affine::new(x_r, y_r)
     }
 
-    /// Negate a point
+    /// Negate a point.
     pub fn negate(&self) -> Self {
         if self.is_infinity {
             return *self;
