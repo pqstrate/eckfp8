@@ -1,6 +1,6 @@
 use crate::affine::Affine;
 use crate::basefield::{from_coeffs, BaseField};
-use crate::{mul_generator_projective, Group, ScalarField};
+use crate::{double_scalar_mul_basepoint_affine, mul_generator_affine, Group, ScalarField};
 use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 use p3_field::{Field, PrimeCharacteristicRing};
 use p3_koala_bear::KoalaBear;
@@ -130,12 +130,13 @@ impl Projective {
 
     /// Multiply the fixed generator using a precomputed table.
     pub fn mul_generator(scalar: &ScalarField) -> Self {
-        mul_generator_projective(scalar)
+        Projective::from_affine(&mul_generator_affine(scalar))
     }
 
     /// Compute a * G + b * P, where G is the fixed generator.
     pub fn double_scalar_mul_basepoint(a: &ScalarField, b: &ScalarField, point: &Self) -> Self {
-        <Self as Group>::double_scalar_mul_basepoint(a, b, point)
+        let affine_point = point.to_affine();
+        Projective::from_affine(&double_scalar_mul_basepoint_affine(a, b, &affine_point))
     }
 
     /// Batch normalization: convert multiple projective points to affine.

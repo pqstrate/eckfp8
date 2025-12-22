@@ -1,7 +1,7 @@
 use std::sync::OnceLock;
 
 use crate::basefield::from_coeffs;
-use crate::{Affine, Projective, ScalarBits, ScalarField};
+use crate::{Affine, ScalarBits, ScalarField};
 use p3_koala_bear::KoalaBear;
 
 static GENERATOR_X_COEFFS: [[u32; 8]; 256] = [
@@ -1628,7 +1628,7 @@ static GENERATOR_Y_COEFFS: [[u32; 8]; 256] = [
     ],
 ];
 
-fn affine_table() -> &'static [Affine; 256] {
+pub(crate) fn affine_table() -> &'static [Affine; 256] {
     static TABLE: OnceLock<[Affine; 256]> = OnceLock::new();
     TABLE.get_or_init(|| {
         let mut table = [Affine::INFINITY; 256];
@@ -1672,9 +1672,4 @@ fn windowed_mul_affine(table: &[Affine; 256], scalar_limbs: [u64; 4]) -> Affine 
 /// Multiply the fixed generator using a precomputed table (affine output).
 pub fn mul_generator_affine(scalar: &ScalarField) -> Affine {
     windowed_mul_affine(affine_table(), scalar.to_u64_limbs())
-}
-
-/// Multiply the fixed generator using a precomputed table (projective output).
-pub fn mul_generator_projective(scalar: &ScalarField) -> Projective {
-    Projective::from_affine(&mul_generator_affine(scalar))
 }

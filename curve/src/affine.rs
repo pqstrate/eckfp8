@@ -10,7 +10,7 @@
 // Twist security (Pollard-Rho): 120.86
 
 use crate::basefield::{from_coeffs, BaseField};
-use crate::{mul_generator_affine, Group, ScalarField};
+use crate::{double_scalar_mul_basepoint_affine, mul_generator_affine, Group, ScalarField};
 use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 use p3_field::{Field, PrimeCharacteristicRing};
 use p3_koala_bear::KoalaBear;
@@ -193,7 +193,7 @@ impl Affine {
 
     /// Compute a * G + b * P, where G is the fixed generator.
     pub fn double_scalar_mul_basepoint(a: &ScalarField, b: &ScalarField, point: &Self) -> Self {
-        <Self as Group>::double_scalar_mul_basepoint(a, b, point)
+        double_scalar_mul_basepoint_affine(a, b, point)
     }
 }
 

@@ -185,10 +185,9 @@ impl VerifyingKey {
         }
 
         let e = hash_challenge(&sig.r, &self.point, msg)?;
-        let lhs = <Affine as Group>::mul_generator(&sig.s);
-        let rhs = sig.r + self.point.scalar_mul(&e);
+        let lhs = Affine::double_scalar_mul_basepoint(&sig.s, &-e, &self.point);
 
-        Ok(lhs == rhs)
+        Ok(lhs == sig.r)
     }
 }
 
