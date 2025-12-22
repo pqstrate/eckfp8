@@ -1,2 +1,6 @@
 [workspace]
-members = ["curve"]
+resolver = "2"
+members = [
+    "curve",
+    "schnorr"
+    ]
