@@ -60,4 +60,4 @@ mod tests;
 pub use constants::{PK_SIZE, SIG_SIZE, SK_SIZE};
 pub use errors::SchnorrError;
 pub use keys::{SigningKey, VerifyingKey};
-pub use signatures::Signature;
+pub use signatures::{Signature, hash_challenge};

@@ -140,6 +140,11 @@ impl SigningKey {
 }
 
 impl VerifyingKey {
+    /// Returns the underlying affine point representing this verifying key.
+    pub fn as_affine(&self) -> Affine {
+        self.point
+    }
+
     /// Verifies a signature on a message using this verifying key.
     ///
     /// The verification checks whether the signature equation holds:

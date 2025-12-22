@@ -50,7 +50,7 @@ pub struct Signature {
 /// 2. The input is `R || pk || msg` concatenated
 /// 3. Poseidon2 with width 16, rate 8, and output 8 is used for hashing
 /// 4. The first 5 digest elements are packed into a scalar field element
-pub(crate) fn hash_challenge(
+pub fn hash_challenge(
     r: &Affine,
     pk: &Affine,
     msg: &[BabyBear],
