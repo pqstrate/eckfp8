@@ -142,7 +142,7 @@ pub fn scalar_to_bits(scalar: &curve::ScalarField) -> Vec<bool> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use curve::{Group, Projective, ScalarField};
+    use curve::{Projective, ScalarField};
 
     #[test]
     fn test_point_conversion() {

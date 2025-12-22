@@ -242,7 +242,11 @@ fn enforce_add_constraints_compact<AB: AirBuilder<F = KoalaBear>>(
     let den_expected = fp8_sub::<AB>(&base_x, &acc_x);
     assert_fp8_eq(builder, &add_num, &num_expected);
     assert_fp8_eq(builder, &add_den, &den_expected);
-    assert_fp8_eq(builder, &fp8_mul::<AB>(&add_den, &add_inv), &fp8_one::<AB>());
+    assert_fp8_eq(
+        builder,
+        &fp8_mul::<AB>(&add_den, &add_inv),
+        &fp8_one::<AB>(),
+    );
     assert_fp8_eq(builder, &add_slope, &fp8_mul::<AB>(&add_num, &add_inv));
 
     let slope2 = fp8_mul::<AB>(&add_slope, &add_slope);
@@ -261,15 +265,11 @@ fn coeffs_to_base(coeffs: [KoalaBear; COORD_LIMBS]) -> BaseField {
 
 fn coeffs_from_row(row: &[KoalaBear], start: usize) -> BaseField {
     let mut coeffs = [KoalaBear::ZERO; COORD_LIMBS];
-    for i in 0..COORD_LIMBS {
-        coeffs[i] = row[start + i];
-    }
+    coeffs.copy_from_slice(&row[start..start + COORD_LIMBS]);
     unsafe { core::mem::transmute(coeffs) }
 }
 
 fn write_base(row: &mut [KoalaBear], start: usize, value: BaseField) {
     let coeffs: [KoalaBear; COORD_LIMBS] = unsafe { core::mem::transmute(value) };
-    for i in 0..COORD_LIMBS {
-        row[start + i] = coeffs[i];
-    }
+    row[start..start + COORD_LIMBS].copy_from_slice(&coeffs[..COORD_LIMBS]);
 }

@@ -21,10 +21,8 @@ use std::time::Instant;
 
 fn encode_point(point: &CircuitPoint) -> [KoalaBear; 16] {
     let mut out = [KoalaBear::ZERO; 16];
-    for i in 0..8 {
-        out[i] = point.x[i];
-        out[i + 8] = point.y[i];
-    }
+    out[..8].copy_from_slice(&point.x);
+    out[8..16].copy_from_slice(&point.y);
     out
 }
 

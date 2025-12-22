@@ -23,7 +23,7 @@ pub const POSEIDON2_SBOX_REGISTERS: usize = 1;
 pub const POSEIDON2_HALF_FULL_ROUNDS: usize = 4;
 pub const POSEIDON2_PARTIAL_ROUNDS: usize = 13;
 pub const POSEIDON2_INPUT_LEN: usize = 35;
-pub const POSEIDON2_NUM_PERMS: usize = (POSEIDON2_INPUT_LEN + POSEIDON2_RATE - 1) / POSEIDON2_RATE;
+pub const POSEIDON2_NUM_PERMS: usize = POSEIDON2_INPUT_LEN.div_ceil(POSEIDON2_RATE);
 pub const POSEIDON2_PACKED_LIMBS: usize = 3;
 
 #[derive(Clone, Debug)]
@@ -116,8 +116,8 @@ where
                 for i in 0..POSEIDON2_RATE {
                     builder.assert_eq(inputs[i].clone(), public_inputs[i]);
                 }
-                for i in POSEIDON2_RATE..POSEIDON2_WIDTH {
-                    builder.assert_eq(inputs[i].clone(), BabyBear::ZERO);
+                for input in inputs.iter().take(POSEIDON2_WIDTH).skip(POSEIDON2_RATE) {
+                    builder.assert_eq(input.clone(), BabyBear::ZERO);
                 }
                 continue;
             }

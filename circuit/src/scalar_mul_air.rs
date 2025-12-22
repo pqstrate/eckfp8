@@ -275,9 +275,7 @@ fn write_point(row: &mut [KoalaBear], start: usize, point: &CircuitPoint) {
 
 fn write_base(row: &mut [KoalaBear], start: usize, value: BaseField) {
     let coeffs: [KoalaBear; COORD_LIMBS] = unsafe { core::mem::transmute(value) };
-    for i in 0..COORD_LIMBS {
-        row[start + i] = coeffs[i];
-    }
+    row[start..start + COORD_LIMBS].copy_from_slice(&coeffs[..COORD_LIMBS]);
 }
 
 pub(crate) fn enforce_add_constraints<AB: AirBuilder<F = KoalaBear>>(
@@ -417,10 +415,10 @@ pub(crate) fn fp8_mul<AB: AirBuilder<F = KoalaBear>>(
     b: &[AB::Expr; COORD_LIMBS],
 ) -> [AB::Expr; COORD_LIMBS] {
     let mut t = vec![AB::Expr::ZERO; 2 * COORD_LIMBS - 1];
-    for i in 0..COORD_LIMBS {
-        for j in 0..COORD_LIMBS {
+    for (i, a_i) in a.iter().enumerate().take(COORD_LIMBS) {
+        for (j, b_j) in b.iter().enumerate().take(COORD_LIMBS) {
             let idx = i + j;
-            t[idx] = t[idx].clone() + a[i].clone() * b[j].clone();
+            t[idx] = t[idx].clone() + a_i.clone() * b_j.clone();
         }
     }
 
@@ -429,7 +427,7 @@ pub(crate) fn fp8_mul<AB: AirBuilder<F = KoalaBear>>(
     for k in 0..COORD_LIMBS {
         let mut acc = t[k].clone();
         if k + COORD_LIMBS < t.len() {
-            acc = acc + t[k + COORD_LIMBS].clone() * w;
+            acc += t[k + COORD_LIMBS].clone() * w;
         }
         out[k] = acc;
     }

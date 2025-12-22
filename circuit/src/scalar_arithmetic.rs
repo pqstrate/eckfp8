@@ -34,7 +34,7 @@ impl CircuitScalar {
         // Process bit by bit to avoid overflow
         let mut bit_position = 0u32;
 
-        for limb_idx in 0..SCALAR_LIMBS {
+        for limb in limbs.iter_mut().take(SCALAR_LIMBS) {
             if bit_position >= 256 {
                 break;
             }
@@ -54,7 +54,7 @@ impl CircuitScalar {
                     limb_value |= next_bits << (LIMB_BITS - bits_from_next);
                 }
 
-                limbs[limb_idx] = KoalaBear::from_u32(limb_value as u32);
+                *limb = KoalaBear::from_u32(limb_value as u32);
             }
 
             bit_position += LIMB_BITS;
