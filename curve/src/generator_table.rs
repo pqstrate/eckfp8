@@ -1661,7 +1661,7 @@ fn windowed_mul_affine(table: &[Affine; 256], scalar_limbs: [u64; 4]) -> Affine 
 
             let window = ((limb >> shift) & 0xFF) as usize;
             if window != 0 {
-                result = result + table[window];
+                result += table[window];
             }
         }
     }

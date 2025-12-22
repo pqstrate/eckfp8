@@ -278,6 +278,7 @@ impl AddAssign for Affine {
     }
 }
 
+#[allow(clippy::suspicious_arithmetic_impl)]
 impl Sub for Affine {
     type Output = Self;
 

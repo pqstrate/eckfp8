@@ -30,13 +30,13 @@ pub struct Signature {
 /// Computes the Fiat-Shamir challenge for the Schnorr signature scheme.
 ///
 /// The challenge is computed as `e = H(R || pk || msg)` using the Poseidon2
-/// hash function over the BabyBear field.
+/// hash function over the KoalaBear field.
 ///
 /// # Arguments
 ///
 /// * `r` - The commitment point R from the signature
 /// * `pk` - The public verifying key
-/// * `msg` - The message being signed/verified, encoded as BabyBear field elements
+/// * `msg` - The message being signed/verified, encoded as KoalaBear field elements
 ///
 /// # Returns
 ///
@@ -46,7 +46,7 @@ pub struct Signature {
 ///
 /// # Implementation Details
 ///
-/// 1. Points are encoded as 16 BabyBear field elements (8 for x-coordinate, 8 for y-coordinate)
+/// 1. Points are encoded as 16 KoalaBear field elements (8 for x-coordinate, 8 for y-coordinate)
 /// 2. The input is `R || pk || msg` concatenated
 /// 3. Poseidon2 with width 16, rate 8, and output 8 is used for hashing
 /// 4. The first 5 digest elements are packed into a scalar field element
@@ -86,11 +86,11 @@ pub(crate) fn hash_challenge(
     Ok(ScalarField::from_canonical_limbs([limb0, limb1, limb2, 0]))
 }
 
-/// Encodes an elliptic curve point as an array of BabyBear field elements.
+/// Encodes an elliptic curve point as an array of KoalaBear field elements.
 ///
 /// The KoalaBear curve is defined over an Fp8 extension field, where each
 /// coordinate consists of 8 base field elements. This function extracts
-/// those elements and converts them to BabyBear field elements.
+/// those elements and converts them to KoalaBear field elements for use in Poseidon2.
 ///
 /// # Arguments
 ///
@@ -98,7 +98,7 @@ pub(crate) fn hash_challenge(
 ///
 /// # Returns
 ///
-/// An array of 16 BabyBear field elements:
+/// An array of 16 KoalaBear field elements:
 /// - Elements 0-7: x-coordinate coefficients
 /// - Elements 8-15: y-coordinate coefficients
 fn encode_point(point: &Affine) -> [BabyBear; 16] {

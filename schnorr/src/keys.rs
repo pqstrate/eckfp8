@@ -102,7 +102,7 @@ impl SigningKey {
     /// # Arguments
     ///
     /// * `rng` - A cryptographically secure random number generator for the nonce
-    /// * `msg` - The message to sign, encoded as BabyBear field elements
+    /// * `msg` - The message to sign, encoded as KoalaBear field elements
     ///
     /// # Returns
     ///
@@ -152,7 +152,7 @@ impl VerifyingKey {
     ///
     /// # Arguments
     ///
-    /// * `msg` - The message that was signed, encoded as BabyBear field elements
+    /// * `msg` - The message that was signed, encoded as KoalaBear field elements
     /// * `sig` - The signature to verify
     ///
     /// # Returns

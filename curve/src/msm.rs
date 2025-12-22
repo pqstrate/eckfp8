@@ -29,12 +29,12 @@ pub fn double_scalar_mul_basepoint_affine(
 
             let a_window = ((a_limb >> shift) & 0xFF) as usize;
             if a_window != 0 {
-                result = result + base_table[a_window];
+                result += base_table[a_window];
             }
 
             let b_window = ((b_limb >> shift) & 0xFF) as usize;
             if b_window != 0 {
-                result = result + point_table[b_window];
+                result += point_table[b_window];
             }
         }
     }

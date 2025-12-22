@@ -2,8 +2,8 @@
 //!
 //! This library implements a Schnorr signature scheme using:
 //! - The KoalaBear elliptic curve (Fp8 curve)
-//! - Poseidon2-BabyBear hash function for the Fiat-Shamir challenge
-//! - BabyBear field elements for message encoding
+//! - Poseidon2 hash function over the KoalaBear field for the Fiat-Shamir challenge
+//! - KoalaBear field elements for message encoding
 //!
 //! # Overview
 //!
@@ -27,7 +27,7 @@
 //! // Derive the corresponding verifying key
 //! let verifying_key = signing_key.verifying_key();
 //!
-//! // Create a message (using BabyBear field elements)
+//! // Create a message (using KoalaBear field elements)
 //! let message = [
 //!     BabyBear::from_u32(1),
 //!     BabyBear::from_u32(2),
@@ -47,7 +47,7 @@
 //! - Always use a cryptographically secure random number generator (CSRNG)
 //! - Each signature must use a fresh random nonce
 //! - Protect the signing key from unauthorized access
-//! - Messages are encoded as BabyBear field elements
+//! - Messages are encoded as KoalaBear field elements
 
 mod constants;
 mod errors;
@@ -57,6 +57,7 @@ mod signatures;
 #[cfg(test)]
 mod tests;
 
+pub use constants::{PK_SIZE, SIG_SIZE, SK_SIZE};
 pub use errors::SchnorrError;
 pub use keys::{SigningKey, VerifyingKey};
 pub use signatures::Signature;

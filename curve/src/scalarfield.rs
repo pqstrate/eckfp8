@@ -600,6 +600,7 @@ impl MulAssign for ScalarField {
     }
 }
 
+#[allow(clippy::suspicious_arithmetic_impl)]
 impl Div for ScalarField {
     type Output = Self;
 
@@ -642,7 +643,7 @@ impl Display for ScalarField {
 
 impl Debug for ScalarField {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "ScalarField({})", self)
+        write!(f, "ScalarField({self})")
     }
 }
 
@@ -675,7 +676,7 @@ impl ScalarField {
             let mut remaining = limb;
             for _ in 0..64 {
                 if remaining & 1 == 1 {
-                    result = result * base;
+                    result *= base;
                 }
                 base = base * base;
                 remaining >>= 1;

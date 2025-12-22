@@ -41,7 +41,7 @@ pub trait Group:
             let mut bits = limb;
             for _ in 0..64 {
                 if bits & 1 == 1 {
-                    result = result + temp;
+                    result += temp;
                 }
                 temp = temp.double();
                 bits >>= 1;
@@ -86,7 +86,7 @@ pub trait Group:
 
                 let window = ((limb >> shift) & 0xF) as usize;
                 if window != 0 {
-                    result = result + table[window];
+                    result += table[window];
                 }
             }
         }
@@ -109,7 +109,7 @@ pub trait Group:
 
         while bits > 0 {
             if bits & 1 == 1 {
-                result = result + temp;
+                result += temp;
             }
             temp = temp.double();
             bits >>= 1;
@@ -128,7 +128,7 @@ pub trait Group:
 
         let mut result = Self::identity();
         for (point, scalar) in points.iter().zip(scalars.iter()) {
-            result = result + point.scalar_mul(scalar);
+            result += point.scalar_mul(scalar);
         }
         result
     }

@@ -15,6 +15,7 @@ mod scalarfield;
 
 pub use affine::Affine;
 pub use basefield::BaseField;
+pub use basefield::{to_bytes, to_u32s};
 pub use generator_table::mul_generator_affine;
 pub use group::{Group, ScalarBits};
 pub use msm::double_scalar_mul_basepoint_affine;

@@ -1,12 +1,12 @@
 # Schnorr Signatures over KoalaBear Curve
 
-A Rust implementation of the Schnorr signature scheme using the KoalaBear elliptic curve (defined over an Fp8 extension field) and Poseidon2-BabyBear hash function.
+A Rust implementation of the Schnorr signature scheme using the KoalaBear elliptic curve (defined over an Fp8 extension field) and Poseidon2 hash function over the KoalaBear field.
 
 ## Features
 
 - **Schnorr Signatures**: Classic Schnorr signature scheme with provable security
 - **KoalaBear Curve**: Elliptic curve over an Fp8 extension field optimized for zero-knowledge proofs
-- **Poseidon2 Hashing**: Uses Poseidon2-BabyBear for the Fiat-Shamir transform
+- **Poseidon2 Hashing**: Uses Poseidon2 over the KoalaBear field for the Fiat-Shamir transform
 - **Serialization**: Built-in support for `serde` serialization/deserialization
 - **Type Safety**: Separate types for signing and verifying keys
 
@@ -40,7 +40,7 @@ fn main() {
     // Derive the corresponding verifying key
     let verifying_key = signing_key.verifying_key();
 
-    // Create a message (using BabyBear field elements)
+    // Create a message (using KoalaBear field elements)
     let message = [
         BabyBear::from_u32(1),
         BabyBear::from_u32(2),
@@ -111,19 +111,19 @@ The implementation follows the standard Schnorr signature protocol:
 
 ### Hash Function
 
-The implementation uses Poseidon2-BabyBear for the Fiat-Shamir challenge:
+The implementation uses Poseidon2 over the KoalaBear field for the Fiat-Shamir challenge:
 - **Width**: 16 field elements
 - **Rate**: 8 field elements
 - **Output**: 8 field elements
 
-Points are encoded as 16 BabyBear field elements (8 for x-coordinate, 8 for y-coordinate) before hashing.
+Points are encoded as 16 KoalaBear field elements (8 for x-coordinate, 8 for y-coordinate) before hashing.
 
 ## Security Considerations
 
 - **Random Number Generator**: Always use a cryptographically secure RNG (CSRNG) like `rand::thread_rng()` or `rand::rngs::OsRng`
 - **Nonce Uniqueness**: Each signature must use a fresh random nonce. Reusing nonces can leak the secret key
 - **Key Protection**: Keep signing keys secret and secure. Only share verifying keys
-- **Message Encoding**: Messages must be properly encoded as BabyBear field elements
+- **Message Encoding**: Messages must be properly encoded as KoalaBear field elements
 
 ## API Documentation
 

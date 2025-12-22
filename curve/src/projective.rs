@@ -207,6 +207,7 @@ impl AddAssign for Projective {
     }
 }
 
+#[allow(clippy::suspicious_arithmetic_impl)]
 impl Sub for Projective {
     type Output = Self;
 

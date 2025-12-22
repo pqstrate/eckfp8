@@ -17,7 +17,7 @@ pub const SK_SIZE: usize = 32;
 /// A signature consists of:
 /// - A point R (40 bytes)
 /// - A scalar s (32 bytes)
-/// Total: 72 bytes
+///   Total: 72 bytes
 pub const SIG_SIZE: usize = 72;
 
 /// Width parameter for the Poseidon2 permutation.
