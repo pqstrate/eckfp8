@@ -1,2 +1,5 @@
 [workspace]
-members = ["curve"]
+members = [
+    "curve", 
+    "schnorr"
+    ]

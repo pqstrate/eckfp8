@@ -190,6 +190,11 @@ impl Affine {
     pub fn mul_generator(scalar: &ScalarField) -> Self {
         mul_generator_affine(scalar)
     }
+
+    /// Compute a * G + b * P, where G is the fixed generator.
+    pub fn double_scalar_mul_basepoint(a: &ScalarField, b: &ScalarField, point: &Self) -> Self {
+        <Self as Group>::double_scalar_mul_basepoint(a, b, point)
+    }
 }
 
 impl Group for Affine {

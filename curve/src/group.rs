@@ -51,6 +51,12 @@ pub trait Group:
         result
     }
 
+    /// Compute a * G + b * P, where G is the fixed generator.
+    #[inline]
+    fn double_scalar_mul_basepoint(a: &Self::Scalar, b: &Self::Scalar, point: &Self) -> Self {
+        Self::mul_generator(a) + point.scalar_mul(b)
+    }
+
     /// Fixed-window (width = 4) scalar multiplication.
     fn scalar_mul_windowed(&self, scalar: &Self::Scalar) -> Self {
         if self.is_identity() {

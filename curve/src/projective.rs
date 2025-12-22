@@ -133,6 +133,11 @@ impl Projective {
         mul_generator_projective(scalar)
     }
 
+    /// Compute a * G + b * P, where G is the fixed generator.
+    pub fn double_scalar_mul_basepoint(a: &ScalarField, b: &ScalarField, point: &Self) -> Self {
+        <Self as Group>::double_scalar_mul_basepoint(a, b, point)
+    }
+
     /// Batch normalization: convert multiple projective points to affine.
     /// This is more efficient than converting them individually.
     pub fn batch_normalize(points: &[Self]) -> Vec<Affine> {

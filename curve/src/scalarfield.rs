@@ -91,8 +91,20 @@ impl ScalarField {
         montgomery_mul(*self, one).limbs
     }
 
+    /// Serialize this scalar using the Plonky3 raw-data format.
+    pub fn to_bytes(&self) -> [u8; <Self as RawDataSerializable>::NUM_BYTES] {
+        let bytes: Vec<u8> = (*self).into_bytes().into_iter().collect();
+        bytes.try_into().expect("scalarfield byte length")
+    }
+
+    /// Serialize this scalar into little-endian u32 words.
+    pub fn to_u32s(&self) -> [u32; <Self as RawDataSerializable>::NUM_BYTES / 4] {
+        let words: Vec<u32> = Self::into_u32_stream([*self]).into_iter().collect();
+        words.try_into().expect("scalarfield u32 length")
+    }
+
     #[inline]
-    fn from_canonical_limbs(limbs: [u64; 4]) -> Self {
+    pub fn from_canonical_limbs(limbs: [u64; 4]) -> Self {
         montgomery_mul(ScalarField { limbs }, ScalarField { limbs: R2 })
     }
 }
