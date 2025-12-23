@@ -20,8 +20,11 @@ use serde::{Deserialize, Serialize};
 /// Represents a point in affine coordinates (x, y) or the point at infinity.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Affine {
+    /// The x-coordinate of the point (Fp8 element)
     pub x: BaseField,
+    /// The y-coordinate of the point (Fp8 element)
     pub y: BaseField,
+    /// Whether this point is the point at infinity (identity element)
     pub is_infinity: bool,
 }
 

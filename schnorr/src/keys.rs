@@ -188,11 +188,55 @@ impl VerifyingKey {
         if self.point.is_infinity() || sig.r.is_infinity() {
             return Err(SchnorrError::InvalidPoint);
         }
+        if !self.point.is_on_curve() || !sig.r.is_on_curve() {
+            return Err(SchnorrError::InvalidPoint);
+        }
 
         let e = hash_challenge(&sig.r, &self.point, msg)?;
         let lhs = Affine::double_scalar_mul_basepoint(&sig.s, &-e, &self.point);
 
         Ok(lhs == sig.r)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use curve::BaseField;
+    use p3_baby_bear::BabyBear;
+    use p3_field::PrimeCharacteristicRing;
+    use rand::SeedableRng;
+    use rand::rngs::StdRng;
+
+    #[test]
+    fn test_verify_rejects_invalid_signature_point() {
+        let mut rng = StdRng::seed_from_u64(42);
+        let sk = SigningKey::random(&mut rng);
+        let pk = sk.verifying_key();
+        let msg = [BabyBear::from_u32(1), BabyBear::from_u32(2)];
+
+        let mut sig = sk.sign(&mut rng, &msg).expect("sign");
+        sig.r = Affine::new(BaseField::ZERO, BaseField::ZERO);
+        assert!(!sig.r.is_on_curve());
+
+        let err = pk.verify(&msg, &sig).expect_err("invalid point");
+        assert_eq!(err, SchnorrError::InvalidPoint);
+    }
+
+    #[test]
+    fn test_verify_rejects_invalid_public_key_point() {
+        let mut rng = StdRng::seed_from_u64(42);
+        let sk = SigningKey::random(&mut rng);
+        let msg = [BabyBear::from_u32(7), BabyBear::from_u32(9)];
+        let sig = sk.sign(&mut rng, &msg).expect("sign");
+
+        let bad_pk = VerifyingKey {
+            point: Affine::new(BaseField::ZERO, BaseField::ZERO),
+        };
+        assert!(!bad_pk.point.is_on_curve());
+
+        let err = bad_pk.verify(&msg, &sig).expect_err("invalid point");
+        assert_eq!(err, SchnorrError::InvalidPoint);
     }
 }
 

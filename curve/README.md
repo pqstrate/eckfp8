@@ -74,47 +74,22 @@ y = 71894712·u⁷ + 1876016551·u⁶ + 1684498755·u⁵ + 598910111·u⁴
 
 ## Curve Selection Rationale
 
-### Why Extension Fields?
-
-The curve is defined over an Fp8 extension field rather than a prime field for several key reasons:
+### KoalaBear field
 
 1. **STARK-Friendly Construction**: Extension fields work well with STARK proof systems and algebraic hash functions
 2. **Integration with Plonky3**: Seamless compatibility with the Plonky3 ZK-STARK framework which uses KoalaBear fields
-3. **Hash-to-Curve Efficiency**: SSWU mapping works efficiently over extension fields
-4. **Compact Representation**: Larger field elements allow for more compact scalar representations
-5. **Cryptographic Diversity**: Provides alternative security assumptions compared to traditional prime-field curves
 
-### Why KoalaBear?
-
-The KoalaBear prime (p = 2³¹ - 2²⁷ + 1) offers unique advantages:
-
-1. **STARK-Friendly**: Optimized for STARK proof systems with good 2-adicity
-2. **Efficient Arithmetic**: 31-bit prime fits well in 32-bit and 64-bit architectures
-3. **FFT-Friendly**: High 2-adicity (27) enables efficient Fast Fourier Transforms
-4. **Hardware Optimization**: Enables efficient implementations on modern processors
-
-### Why These Coefficients?
+### Efficient Coefficients
 
 - **a = 3u**:
   - Simplifies point addition formulas
-  - Enables efficient doubling operations
-  - Non-zero linear coefficient prevents certain attacks
 
 - **b = 42639**:
   - Chosen to ensure the curve has prime order
-  - Provides good security properties
-  - Avoids special cases in point arithmetic
 
 ### Hash-to-Curve Method
 
-Generators are derived using **Simplified SWU (SSWU)** mapping:
-
-- **Deterministic**: Reproducible generator points from known strings
-- **Uniform**: Produces uniformly distributed points
-- **Efficient**: Faster than rejection sampling methods
-- **Standard**: Follows IETF hash-to-curve specifications
-
-The domain separation strings ('ZKM2', 'ZKM2 - Pedersen') ensure independent generators for different cryptographic purposes.
+Generators are derived using **Simplified SWU (SSWU)** mapping
 
 ## Security Properties
 
@@ -134,26 +109,20 @@ The domain separation strings ('ZKM2', 'ZKM2 - Pedersen') ensure independent gen
 k > 2²⁴²
 ```
 
-The enormous embedding degree provides strong security guarantees and ensures the discrete logarithm problem remains hard in both the curve group and any related field extensions.
-
 ### Prime Order
 
 - **Cofactor = 1**: Every non-identity point generates the full group
-- **No Small Subgroups**: Immune to small subgroup attacks
-- **Simple Scalar Multiplication**: No cofactor clearing required
 
 ### 2-Adicity
 
 - **v₂(q-1) = 7**: Enables 128-point FFTs
-- **STARK-Optimized**: Efficient for polynomial commitments
-- **Root of Unity**: 2⁷ = 128 primitive roots available
 
 ## Field Structure
 
 ### Base Field (KoalaBear)
 
 ```
-GF(2130706433) where p = 2³¹ - 2²⁷ + 1
+GF(2130706433) where p = 2^31 - 2^24 + 1
 ```
 
 ### Extension Field (Fp8)
@@ -180,18 +149,6 @@ Fr: 0xf06e44682c2aa440f5f26a5ae1748ff85ccc2efc3068faf2154ff8a2e94d81
 ```
 
 Scalars are represented in Montgomery form using four 64-bit limbs for efficient modular arithmetic.
-
-## Features
-
-- **Affine Coordinates**: Memory-efficient point representation
-- **Projective Coordinates**: Faster point arithmetic without inversions
-- **Montgomery Form**: Efficient scalar field arithmetic
-- **Precomputed Tables**: Fast fixed-base scalar multiplication (256-entry tables)
-- **Windowed Scalar Multiplication**: Efficient variable-base multiplication
-- **Multi-Scalar Multiplication (MSM)**: Optimized multi-exponentiation
-- **Batch Normalization**: Efficient conversion of multiple projective points to affine
-- **Serialization**: Full serde support for all types
-- **Random Sampling**: Cryptographically secure random point and scalar generation
 
 ## Usage
 
@@ -272,14 +229,6 @@ let diff = point1 - point2;
 
 ## Performance
 
-### Optimizations
-
-- **Precomputed Generator Tables**: 256-entry affine tables for fixed-base multiplication
-- **Montgomery Arithmetic**: Efficient scalar field operations
-- **Windowed Methods**: 8-bit windows for scalar multiplication
-- **Batch Inversions**: Efficient multi-point normalization
-- **Mixed Addition**: Optimized addition of affine + projective points
-
 ### Benchmarks
 
 Run benchmarks with:
@@ -287,11 +236,6 @@ Run benchmarks with:
 ```bash
 cargo bench
 ```
-
-Typical performance on modern hardware:
-- **Fixed-base scalar multiplication**: ~50,000 ops/sec
-- **Variable-base scalar multiplication**: ~10,000 ops/sec
-- **Point addition**: ~500,000 ops/sec
 
 ## Installation
 
@@ -318,21 +262,6 @@ cargo bench
 
 # Generate documentation
 cargo doc --open
-```
-
-## Testing
-
-The library includes comprehensive test coverage:
-
-```bash
-# Run all tests
-cargo test
-
-# Run with verbose output
-cargo test -- --nocapture
-
-# Run specific test module
-cargo test affine::tests
 ```
 
 ## API Documentation
@@ -362,23 +291,3 @@ cargo doc --open
 ## License
 
 This project is part of the eckfp8 library suite.
-
-## Contributing
-
-Contributions are welcome! Please ensure:
-- All tests pass: `cargo test`
-- Code is formatted: `cargo fmt`
-- No clippy warnings: `cargo clippy`
-- Documentation is updated
-
-## Security
-
-This is research/educational code. For production use:
-- Conduct thorough security audits
-- Use constant-time implementations where needed
-- Follow best practices for key management
-- Consider side-channel protections
-
-## Acknowledgments
-
-Built on top of the excellent Plonky3 framework and inspired by the STARK/ZK-proof ecosystem.
