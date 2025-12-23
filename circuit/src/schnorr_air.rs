@@ -308,74 +308,75 @@ fn fill_double_intermediates(row: &mut [KoalaBear], start: usize, base: &Circuit
     write_base(row, start + 3 * COORD_LIMBS, double_slope);
 }
 
+struct Fp8PointExpr<'a, E> {
+    x: &'a [E; COORD_LIMBS],
+    y: &'a [E; COORD_LIMBS],
+}
+
+struct SlopeIntermediatesExpr<'a, E> {
+    num: &'a [E; COORD_LIMBS],
+    den: &'a [E; COORD_LIMBS],
+    inv: &'a [E; COORD_LIMBS],
+    slope: &'a [E; COORD_LIMBS],
+}
+
 fn enforce_add_constraints_with_base<AB: AirBuilder<F = KoalaBear>>(
     builder: &mut AB,
-    acc_x: &[AB::Expr; COORD_LIMBS],
-    acc_y: &[AB::Expr; COORD_LIMBS],
-    base_x: &[AB::Expr; COORD_LIMBS],
-    base_y: &[AB::Expr; COORD_LIMBS],
-    add_num: &[AB::Expr; COORD_LIMBS],
-    add_den: &[AB::Expr; COORD_LIMBS],
-    add_inv: &[AB::Expr; COORD_LIMBS],
-    add_slope: &[AB::Expr; COORD_LIMBS],
-    add_x: &[AB::Expr; COORD_LIMBS],
-    add_y: &[AB::Expr; COORD_LIMBS],
+    acc: Fp8PointExpr<'_, AB::Expr>,
+    base: Fp8PointExpr<'_, AB::Expr>,
+    add: SlopeIntermediatesExpr<'_, AB::Expr>,
+    out: Fp8PointExpr<'_, AB::Expr>,
 ) {
-    let num_expected = fp8_sub::<AB>(base_y, acc_y);
-    let den_expected = fp8_sub::<AB>(base_x, acc_x);
-    assert_fp8_eq(builder, add_num, &num_expected);
-    assert_fp8_eq(builder, add_den, &den_expected);
-    assert_fp8_eq(builder, &fp8_mul::<AB>(add_den, add_inv), &fp8_one::<AB>());
-    assert_fp8_eq(builder, add_slope, &fp8_mul::<AB>(add_num, add_inv));
+    let num_expected = fp8_sub::<AB>(base.y, acc.y);
+    let den_expected = fp8_sub::<AB>(base.x, acc.x);
+    assert_fp8_eq(builder, add.num, &num_expected);
+    assert_fp8_eq(builder, add.den, &den_expected);
+    assert_fp8_eq(builder, &fp8_mul::<AB>(add.den, add.inv), &fp8_one::<AB>());
+    assert_fp8_eq(builder, add.slope, &fp8_mul::<AB>(add.num, add.inv));
 
-    let slope2 = fp8_mul::<AB>(add_slope, add_slope);
-    let x3 = fp8_sub::<AB>(&fp8_sub::<AB>(&slope2, acc_x), base_x);
-    let y3 = fp8_sub::<AB>(&fp8_mul::<AB>(add_slope, &fp8_sub::<AB>(acc_x, &x3)), acc_y);
-    assert_fp8_eq(builder, add_x, &x3);
-    assert_fp8_eq(builder, add_y, &y3);
+    let slope2 = fp8_mul::<AB>(add.slope, add.slope);
+    let x3 = fp8_sub::<AB>(&fp8_sub::<AB>(&slope2, acc.x), base.x);
+    let y3 = fp8_sub::<AB>(&fp8_mul::<AB>(add.slope, &fp8_sub::<AB>(acc.x, &x3)), acc.y);
+    assert_fp8_eq(builder, out.x, &x3);
+    assert_fp8_eq(builder, out.y, &y3);
 }
 
 fn enforce_double_constraints_with_base<AB: AirBuilder<F = KoalaBear>>(
     builder: &mut AB,
-    base_x: &[AB::Expr; COORD_LIMBS],
-    base_y: &[AB::Expr; COORD_LIMBS],
-    double_num: &[AB::Expr; COORD_LIMBS],
-    double_den: &[AB::Expr; COORD_LIMBS],
-    double_inv: &[AB::Expr; COORD_LIMBS],
-    double_slope: &[AB::Expr; COORD_LIMBS],
-    double_x: &[AB::Expr; COORD_LIMBS],
-    double_y: &[AB::Expr; COORD_LIMBS],
+    base: Fp8PointExpr<'_, AB::Expr>,
+    double: SlopeIntermediatesExpr<'_, AB::Expr>,
+    out: Fp8PointExpr<'_, AB::Expr>,
 ) {
     let three = KoalaBear::from_u32(3);
     let a = fp8_a::<AB>();
-    let x2 = fp8_mul::<AB>(base_x, base_x);
+    let x2 = fp8_mul::<AB>(base.x, base.x);
     let num_expected = fp8_add::<AB>(&fp8_mul_scalar::<AB>(&x2, three), &a);
-    let den_expected = fp8_mul_scalar::<AB>(base_y, KoalaBear::from_u32(2));
+    let den_expected = fp8_mul_scalar::<AB>(base.y, KoalaBear::from_u32(2));
 
-    assert_fp8_eq(builder, double_num, &num_expected);
-    assert_fp8_eq(builder, double_den, &den_expected);
+    assert_fp8_eq(builder, double.num, &num_expected);
+    assert_fp8_eq(builder, double.den, &den_expected);
     assert_fp8_eq(
         builder,
-        &fp8_mul::<AB>(double_den, double_inv),
+        &fp8_mul::<AB>(double.den, double.inv),
         &fp8_one::<AB>(),
     );
     assert_fp8_eq(
         builder,
-        double_slope,
-        &fp8_mul::<AB>(double_num, double_inv),
+        double.slope,
+        &fp8_mul::<AB>(double.num, double.inv),
     );
 
-    let slope2 = fp8_mul::<AB>(double_slope, double_slope);
+    let slope2 = fp8_mul::<AB>(double.slope, double.slope);
     let x3 = fp8_sub::<AB>(
         &slope2,
-        &fp8_mul_scalar::<AB>(base_x, KoalaBear::from_u32(2)),
+        &fp8_mul_scalar::<AB>(base.x, KoalaBear::from_u32(2)),
     );
     let y3 = fp8_sub::<AB>(
-        &fp8_mul::<AB>(double_slope, &fp8_sub::<AB>(base_x, &x3)),
-        base_y,
+        &fp8_mul::<AB>(double.slope, &fp8_sub::<AB>(base.x, &x3)),
+        base.y,
     );
-    assert_fp8_eq(builder, double_x, &x3);
-    assert_fp8_eq(builder, double_y, &y3);
+    assert_fp8_eq(builder, out.x, &x3);
+    assert_fp8_eq(builder, out.y, &y3);
 }
 
 pub(crate) fn eval_double_scalar_core<AB: AirBuilder<F = KoalaBear>>(
@@ -437,14 +438,17 @@ pub(crate) fn eval_double_scalar_core<AB: AirBuilder<F = KoalaBear>>(
     let pk_double_y = read_fp8::<AB>(row, offset + DS_PK_DOUBLE_Y_START);
     enforce_double_constraints_with_base(
         builder,
-        &pk_x,
-        &pk_y,
-        &pk_double_num,
-        &pk_double_den,
-        &pk_double_inv,
-        &pk_double_slope,
-        &pk_double_x,
-        &pk_double_y,
+        Fp8PointExpr { x: &pk_x, y: &pk_y },
+        SlopeIntermediatesExpr {
+            num: &pk_double_num,
+            den: &pk_double_den,
+            inv: &pk_double_inv,
+            slope: &pk_double_slope,
+        },
+        Fp8PointExpr {
+            x: &pk_double_x,
+            y: &pk_double_y,
+        },
     );
 
     let sum_x = read_fp8::<AB>(row, offset + DS_SUM_X_START);
@@ -454,7 +458,19 @@ pub(crate) fn eval_double_scalar_core<AB: AirBuilder<F = KoalaBear>>(
     let sum_inv = read_fp8::<AB>(row, offset + DS_SUM_INV_START);
     let sum_slope = read_fp8::<AB>(row, offset + DS_SUM_SLOPE_START);
     enforce_add_constraints_with_base(
-        builder, &pk_x, &pk_y, &g_x, &g_y, &sum_num, &sum_den, &sum_inv, &sum_slope, &sum_x, &sum_y,
+        builder,
+        Fp8PointExpr { x: &pk_x, y: &pk_y },
+        Fp8PointExpr { x: &g_x, y: &g_y },
+        SlopeIntermediatesExpr {
+            num: &sum_num,
+            den: &sum_den,
+            inv: &sum_inv,
+            slope: &sum_slope,
+        },
+        Fp8PointExpr {
+            x: &sum_x,
+            y: &sum_y,
+        },
     );
 
     let addend_x = read_fp8::<AB>(row, offset + DS_ADDEND_X_START);
@@ -494,16 +510,24 @@ pub(crate) fn eval_double_scalar_core<AB: AirBuilder<F = KoalaBear>>(
     let add_y = read_fp8::<AB>(row, offset + DS_ADD_Y_START);
     enforce_add_constraints_with_base(
         &mut add_builder,
-        &acc_x,
-        &acc_y,
-        &addend_x,
-        &addend_y,
-        &add_num,
-        &add_den,
-        &add_inv,
-        &add_slope,
-        &add_x,
-        &add_y,
+        Fp8PointExpr {
+            x: &acc_x,
+            y: &acc_y,
+        },
+        Fp8PointExpr {
+            x: &addend_x,
+            y: &addend_y,
+        },
+        SlopeIntermediatesExpr {
+            num: &add_num,
+            den: &add_den,
+            inv: &add_inv,
+            slope: &add_slope,
+        },
+        Fp8PointExpr {
+            x: &add_x,
+            y: &add_y,
+        },
     );
 
     let mut init_builder = builder.when(acc_inf_expr.clone() * add_sel.clone());
