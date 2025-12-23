@@ -199,6 +199,15 @@ impl VerifyingKey {
     }
 }
 
+impl From<&SigningKey> for VerifyingKey {
+    /// Converts a reference to a signing key into a verifying key.
+    ///
+    /// This is equivalent to calling `signing_key.verifying_key()`.
+    fn from(sk: &SigningKey) -> Self {
+        sk.verifying_key()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -237,14 +246,5 @@ mod tests {
 
         let err = bad_pk.verify(&msg, &sig).expect_err("invalid point");
         assert_eq!(err, SchnorrError::InvalidPoint);
-    }
-}
-
-impl From<&SigningKey> for VerifyingKey {
-    /// Converts a reference to a signing key into a verifying key.
-    ///
-    /// This is equivalent to calling `signing_key.verifying_key()`.
-    fn from(sk: &SigningKey) -> Self {
-        sk.verifying_key()
     }
 }
