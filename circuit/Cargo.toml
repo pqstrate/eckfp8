@@ -21,6 +21,8 @@ p3-dft = { git = "https://github.com/Plonky3/Plonky3.git" }
 p3-fri = { git = "https://github.com/Plonky3/Plonky3.git" }
 p3-keccak = { git = "https://github.com/Plonky3/Plonky3.git" }
 p3-merkle-tree = { git = "https://github.com/Plonky3/Plonky3.git" }
+p3-util = { git = "https://github.com/Plonky3/Plonky3.git" }
+postcard = { version = "1.0", features = ["alloc"] }
 rand = "0.9"
 serde = { version = "1.0", features = ["derive"] }
 
