@@ -79,7 +79,7 @@ fn main() {
     let fri_params = FriParameters {
         log_blowup: 3,
         log_final_poly_len: 0,
-        num_queries: 2,
+        num_queries: 64,
         commit_proof_of_work_bits: 1,
         query_proof_of_work_bits: 1,
         mmcs: challenge_mmcs,
