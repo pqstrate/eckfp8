@@ -28,12 +28,12 @@ where:
 - **a = 3u** (where u is the primitive element of the extension field)
 - **b = 42639**
 
-The base field is GF(p) where **p = 2130706433 = 2³¹ - 2²⁷ + 1** (the KoalaBear prime).
+The base field is GF(p) where **p = 2130706433 = 2³¹ - 2²⁴ + 1** (the KoalaBear prime).
 
 ## Curve Parameters
 
 ### Base Field
-- **Prime modulus**: p = 2,130,706,433 (2³¹ - 2²⁷ + 1)
+- **Prime modulus**: p = 2,130,706,433 (2³¹ - 2²⁴ + 1)
 - **Extension degree**: 8
 - **Field size**: p⁸ ≈ 2²⁴⁸
 
